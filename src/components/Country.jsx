@@ -1,26 +1,33 @@
-import React, {useState} from 'react';
+import React, {Component} from 'react';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 
 
-export default function Country({name, gold}) {
-    const [count, setCount] = useState(parseInt(gold));
+class Country extends Component {    
+    render() {
+        const {country, increment, decrease } = this.props;
     return (
         <div className='box'>
             <Typography variant="h4" component="h4">
-                {name}
+                {country.name}
             </Typography>
             <div className='counter'>
-                Gold Medal Count : {count}                
+                Gold Medal Count : {country.goldMedalCount}            
             </div>
             
             <Button variant="contained" color="success"
-                className='btn' 
-                onClick={()=>{setCount(count+1);}}>
+                className='btn' onClick={()=> increment(country.id)}
+                >
                 +
+            </Button>
+            <Button variant="contained" color="success"
+                className='btn' onClick={() => decrease(country.id)}
+            >
+                -
             </Button>
         </div>
         
     )
-
+    }
 }
+export default Country
