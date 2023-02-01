@@ -1,39 +1,40 @@
 import React, {Component} from 'react';
 import Card from '@mui/material/Card';
-//import CardActions from '@mui/material/CardActions';
-//import CardContent from '@mui/material/CardContent';
-import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { CardContent } from '@mui/material';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
-import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
- 
-
+import Medal from './Medal'
 
 
 class Country extends Component {    
+
+    getTotalMedals(medals){
+        return medals.reduce((total, medal) => total + medal.count, 0);
+    };
     render() {
-        const {country, increment, decrease } = this.props;
+        const {country, increment, decrease} = this.props;
+        
     return (
 
         <Card>
             <CardContent>
                 <Typography variant="h5" component="h5" align='center'>
-                    {country.name}
-                </Typography>                
-                <Typography className='counter' align='center'>
-                    Gold Medal Count : {country.goldMedalCount}            
-                </Typography>              
-                <Button variant="contained" align='center' onClick={()=> increment(country.id)}>
-                    <AddCircleIcon/>  
-                </Button>
-                <Button variant="contained" align='center' onClick={() => decrease(country.id)}>
-                    <RemoveCircleIcon/>
-                </Button>
+                    {country.name}: {this.getTotalMedals(country.medals)}
+                </Typography>
+                {country.medals.map(medal => (
+                                        <Medal
+                                        key={medal.id}
+                                        medal={medal}
+                                        countryId={country.id}
+                                        medalCount={medal.count}
+                                        
+                                        increment={increment}
+                                        decrease={decrease}
+                                        
+                                        />
+                                    ))
+            }               
             </CardContent>
         </Card>
-
-        
     )
     }
 }
