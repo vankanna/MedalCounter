@@ -1,7 +1,4 @@
 import React, {Component} from 'react'; 
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
-
 
 
 class Medal extends Component {   
@@ -12,15 +9,15 @@ class Medal extends Component {
         const {increment,decrease} = this.props;
 
         return(
-        <Typography className='counter' align='center'>
-            {medal.type} Medals: {medal.count}
-            <Button variant="contained" align='center' onClick={()=> {increment(countryId, medal.id);}}>
+        <div className='counter' align='center'>
+            {medal.type} Medals: {medal.count} 
+            <button align='center' onClick={()=> {increment(countryId, medal.id);}}>
             +
-            </Button>
-            <Button variant="contained" align='center' onClick={() => {decrease(countryId, medal.id);}}>
-                -
-            </Button>
-        </Typography>   
+            </button>
+            <button align='center' onClick={() => {decrease(countryId, medal.id);}}>
+            -
+            </button>
+        </div>   
         )
 
     }

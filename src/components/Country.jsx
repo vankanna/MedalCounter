@@ -1,25 +1,23 @@
 import React, {Component} from 'react';
-import Card from '@mui/material/Card';
-import Typography from '@mui/material/Typography';
-import { CardContent } from '@mui/material';
 import Medal from './Medal'
 
 
 class Country extends Component {    
-
+    
     getTotalMedals(medals){
         return medals.reduce((total, medal) => total + medal.count, 0);
     };
     render() {
-        const {country, increment, decrease} = this.props;
-        
+        const {country, increment, decrease, onDelete} = this.props;
+        function handleDelete () {
+            onDelete(country.id);
+        };
     return (
-
-        <Card>
-            <CardContent>
-                <Typography variant="h5" component="h5" align='center'>
+        <div className='card'>
+            <div>
+                <p variant="h5" component="h5" align='center'>
                     {country.name}: {this.getTotalMedals(country.medals)}
-                </Typography>
+                </p>
                 {country.medals.map(medal => (
                                         <Medal
                                         key={medal.id}
@@ -32,9 +30,11 @@ class Country extends Component {
                                         
                                         />
                                     ))
-            }               
-            </CardContent>
-        </Card>
+                }
+                
+                <button onClick={handleDelete}>Delete</button>              
+            </div>
+        </div>
     )
     }
 }
