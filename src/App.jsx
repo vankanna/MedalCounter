@@ -1,5 +1,6 @@
 import './App.css';
 import React, {useState, useEffect} from 'react';
+import axios from 'axios';
 import Country from './components/Country';
 import NewCountry from './components/NewCountry';
 import Typography from '@mui/material/Typography';
@@ -19,15 +20,19 @@ const theme = createTheme({
 const App = () => {  
 
   const [ countries, setCountries ] = useState([]);
+  const apiEndpoint = "https://medalcounter202302.azurewebsites.net/api/country";
+  // const apiEndpoint = "http://localhost:5001"
 
   useEffect(() => {
         // initial data loaded here
-        let fetchedCountryList  = [
-          { id: 1, name: 'United States', medals: [{id: 1, type: "gold", count: 4},{id: 2,type:"sliver", count: 2},{id: 3,type:"bronze", count: 0}]},
-          { id: 2, name: 'China', medals: [{id: 1, type: "gold", count: 3},{id: 2,type:"sliver",  count: 2},{id: 3,type:"bronze", count: 1}]},
-          { id: 3, name: 'Germany', medals: [{id: 1, type: "gold", count: 0},{id: 2,type:"sliver",  count: 1},{id: 3,type:"bronze", count: 1}]},
-        ]
-        setCountries(fetchedCountryList);
+        async function fetchCountries() {
+          const { data: fetchedCountries } = await axios.get(apiEndpoint);
+          const prepcountries = fetchedCountries.map(country => {
+            return { id: country.id, name: country.name, medals: [{id: 1, type: "gold", count: country.gold},{id: 2,type:"sliver", count: country.silver},{id: 3,type:"bronze", count: country.bronze}]}
+          });
+          setCountries(prepcountries);
+        }
+        fetchCountries();
       }, []);  
 
     const DecreaseItem = (countryId, medalId) => {
@@ -42,7 +47,7 @@ const App = () => {
         } 
         return country;
       })
-      // setCountries({countryList:newcountryList});
+      
       setCountries(newcountryList)
     }
     const IncrementItem = (countryId, medalId) => {
@@ -68,15 +73,23 @@ const App = () => {
       return total;
     };
     
-    const addCountry = (countryName) => {
-      const countryListCopy = [...countries];
-      countryListCopy.push({ id: Math.random(), name: countryName, medals: [{id: 1, type: "gold", count: 0},{id: 2,type:"sliver",  count: 0},{id: 3,type:"bronze", count: 0}]});
-      setCountries(countryListCopy);
+    
+    const addCountry = async (name) => {
+      const { data: post } = await axios.post(apiEndpoint, { name: name });
+      setCountries(countries.concat(post));
     }
+    
+    const onDelete = async (countryId) => {
+      const originalCountries = countries;
 
-    const onDelete = (countryId) => {
-      const newcountryList = countries.filter(country => country.id !== countryId);
-      setCountries(newcountryList);
+      setCountries(countries.filter(country => country.id !== countryId));
+      try {
+        await axios.delete(`${apiEndpoint}/${countryId}`);
+        
+      } catch(ex) {
+        alert('An error occurred while deleting a country');
+        setCountries(originalCountries);
+      }
     }
 
     return ( 
