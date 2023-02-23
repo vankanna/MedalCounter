@@ -23,18 +23,19 @@ const App = () => {
   const apiEndpoint = "https://medalcounter202302.azurewebsites.net/api/country";
   // const apiEndpoint = "http://localhost:5001"
 
-  useEffect(() => {
-        // initial data loaded here
-        async function fetchCountries() {
-          const { data: fetchedCountries } = await axios.get(apiEndpoint);
-          const prepcountries = fetchedCountries.map(country => {
-            return { id: country.id, name: country.name, medals: [{id: 1, type: "gold", count: country.gold},{id: 2,type:"sliver", count: country.silver},{id: 3,type:"bronze", count: country.bronze}]}
-          });
-          setCountries(prepcountries);
-        }
-        fetchCountries();
-      }, []);  
-
+    useEffect(() => {
+      // initial data loaded here
+      fetchCountries();
+    }, []); 
+    
+    async function fetchCountries() {
+      const { data: fetchedCountries } = await axios.get(apiEndpoint);
+      const prepcountries = fetchedCountries.map(country => {
+        return { id: country.id, name: country.name, medals: [{id: 1, type: "gold", count: country.gold},{id: 2,type:"sliver", count: country.silver},{id: 3,type:"bronze", count: country.bronze}]}
+      });
+      setCountries(prepcountries);
+    }
+    
     const DecreaseItem = (countryId, medalId) => {
       const newcountryList = countries.map((country) => {
         if(country.id === countryId) {
@@ -76,16 +77,18 @@ const App = () => {
     
     const addCountry = async (name) => {
       const { data: post } = await axios.post(apiEndpoint, { name: name });
-      setCountries(countries.concat(post));
+      console.log(post);
+      fetchCountries();
     }
     
     const onDelete = async (countryId) => {
       const originalCountries = countries;
 
-      setCountries(countries.filter(country => country.id !== countryId));
       try {
         await axios.delete(`${apiEndpoint}/${countryId}`);
-        
+        // Both options work, one is just more efficient
+        setCountries(countries.filter(country => country.id !== countryId));
+        //fetchCountries();
       } catch(ex) {
         alert('An error occurred while deleting a country');
         setCountries(originalCountries);
