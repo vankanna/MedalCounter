@@ -4,7 +4,7 @@ import React from 'react';
 const Medal = (props) => {      
     
     const {medal, countryId} = props;
-    const {increment,decrease} = props;
+    const {increment, decrease} = props;
 
     return(
     <div className='counter' align='center'>

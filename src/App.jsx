@@ -20,8 +20,8 @@ const theme = createTheme({
 const App = () => {  
 
   const [ countries, setCountries ] = useState([]);
-  const apiEndpoint = "https://medalcounter202302.azurewebsites.net/api/country";
-  // const apiEndpoint = "http://localhost:5001"
+  //const apiEndpoint = "https://medalcounter202302.azurewebsites.net/api/country";
+  const apiEndpoint = "https://localhost:5001/api/country"
 
     useEffect(() => {
       // initial data loaded here
@@ -31,40 +31,47 @@ const App = () => {
     async function fetchCountries() {
       const { data: fetchedCountries } = await axios.get(apiEndpoint);
       const prepcountries = fetchedCountries.map(country => {
-        return { id: country.id, name: country.name, medals: [{id: 1, type: "gold", count: country.gold},{id: 2,type:"sliver", count: country.silver},{id: 3,type:"bronze", count: country.bronze}]}
+        return { id: country.id, name: country.name, medals: [{id: 1, type: "gold", count: country.gold},{id: 2,type:"silver", count: country.silver},{id: 3,type:"bronze", count: country.bronze}]}
       });
       setCountries(prepcountries);
     }
     
-    const DecreaseItem = (countryId, medalId) => {
+    
+    const IncrementMedal= (countryId, medalId) => handleUpdate(countryId, medalId, 1);
+    const DecreaseMedal = (countryId, medalId) =>  handleUpdate(countryId, medalId, -1)
+    
+    const handleUpdate = async (countryId, medalId, factor) => {
       const newcountryList = countries.map((country) => {
-        if(country.id === countryId) {
-          country.medals.map((medal) => {
-            if(medal.id === medalId && medal.count > 0) {
-              medal.count -= 1;
-            } 
-            return medal;
-          });
-        } 
-        return country;
-      })
-      
-      setCountries(newcountryList)
-    }
-    const IncrementItem = (countryId, medalId) => {
-      const newcountryList = countries.map((country) => {
+        // const idx = countries.findIndex(c => c.id === countryId);
         if(country.id === countryId) {
           country.medals.map((medal) => {
             if(medal.id === medalId){
-              medal.count += 1;
+              medal.count += (1 * factor);
             } return medal;
           });
         }
         return country;
       });
       setCountries(newcountryList);
-    }
 
+      const countryToPatchIndex = newcountryList.findIndex(x => x.id === countryId);
+      const country = newcountryList[countryToPatchIndex];
+      const medalType = country.medals[medalId - 1].type;
+      const medalCount = country.medals[medalId - 1].count;
+      const jsonPatch = [{ op: "replace", path: medalType, value: medalCount }];
+      
+      try {
+        await axios.patch(`${apiEndpoint}/${countryId}`, jsonPatch);
+      } catch (ex) {
+        if (ex.response && ex.response.status === 404) {
+          // country already deleted
+          console.log("The record does not exist - it may have already been deleted");
+        } else { 
+          alert('An error occurred while updating');
+          setCountries(newcountryList);
+        }
+      }
+    }
     const totalMedal = () => {
       const countryListCopy = [...countries];
       let total = 0;
@@ -115,8 +122,8 @@ const App = () => {
                                         <Country
                                         key={country.id}
                                         country={country}                                    
-                                        increment={IncrementItem}
-                                        decrease={DecreaseItem}                                      
+                                        increment={IncrementMedal}
+                                        decrease={DecreaseMedal}                                      
                                         onDelete={onDelete}
                                         />
                                     ))
