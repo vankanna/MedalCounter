@@ -48,13 +48,19 @@ const App = () => {
 
       setConnection(newConnection);
      }
-     
+
      // componentDidUpdate (changes to connection)
     useEffect(() => {
       if (connection) {
         connection.start()
         .then(() => {
           console.log('Connected!')
+          connection.on('ReceiveAddMessage', country => {
+            console.log(`Add: ${country.name}`);
+            let mutableCountries = [...latestCountries.current];
+            mutableCountries = mutableCountries.concat(country);
+            setCountries(mutableCountries);
+          });
         })
         .catch(e => console.log('Connection failed: ', e));
       }
@@ -108,8 +114,7 @@ const App = () => {
     
     
     const addCountry = async (name) => {
-      const { data: post } = await axios.post(apiEndpoint, { name: name });
-      console.log(post);
+      await axios.post(apiEndpoint, { name: name });
       fetchCountries();
     }
     
