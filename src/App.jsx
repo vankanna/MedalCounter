@@ -1,5 +1,5 @@
 import './App.css';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { HubConnectionBuilder } from '@microsoft/signalr';
 import Country from './components/Country';
@@ -20,25 +20,31 @@ const theme = createTheme({
 
 const App = () => {
 
-
   //const apiEndpoint = "https://medalcounter202302.azurewebsites.net/api/country";
   const hubEndpoint = "https://localhost:5001/medalsHub"
-  //const apiEndpoint = "https://localhost:5001/api/country"
+  const apiEndpoint = "https://localhost:5001/api/country"
   const [countries, setCountries] = useState([]);
   const [connection, setConnection] = useState(null);
 
-  useEffect(() => {
-    // initial data loaded here
-    fetchCountries();
-  }, []);
-
-  async function fetchCountries() {
-    const { data: fetchedCountries } = await axios.get(apiEndpoint);
-    const prepcountries = fetchedCountries.map(country => {
+  const setupCountries = (flatCountries) => {
+    return flatCountries.map(country => {
       return { id: country.id, name: country.name, medals: [{ id: 1, type: "gold", count: country.gold }, { id: 2, type: "silver", count: country.silver }, { id: 3, type: "bronze", count: country.bronze }] }
     });
-    setCountries(prepcountries);
+  };
 
+  const latestCountries = useRef(null);
+  // latestCountries.current is a ref variable to countries
+  // this is needed to access state variable in useEffect w/o dependency
+  latestCountries.current = countries;
+
+  useEffect(() => {
+
+    async function fetchCountries() {
+      const { data: fetchedCountries } = await axios.get(apiEndpoint);
+      setCountries(setupCountries(fetchedCountries));
+    }
+
+    fetchCountries();
 
     // signalR
     const newConnection = new HubConnectionBuilder()
@@ -47,10 +53,11 @@ const App = () => {
       .build();
 
     setConnection(newConnection);
-  }
+  }, []);
 
   // componentDidUpdate (changes to connection)
   useEffect(() => {
+
     if (connection) {
       connection.start()
         .then(() => {
@@ -58,14 +65,13 @@ const App = () => {
           connection.on('ReceiveAddMessage', country => {
             console.log(`Add: ${country.name}`);
             let mutableCountries = [...latestCountries.current];
-            mutableCountries = mutableCountries.concat(country);
+            mutableCountries = mutableCountries.concat(setupCountries([country]));
             setCountries(mutableCountries);
           });
           connection.on('ReceiveDeleteMessage', id => {
             console.log(`Delete id: ${id}`);
             let mutableCountries = [...latestCountries.current];
             mutableCountries = mutableCountries.filter(c => c.id !== id);
-
             setCountries(mutableCountries);
           });
 
@@ -73,7 +79,7 @@ const App = () => {
             console.log(`Patch: ${country.name}`);
             let mutableCountries = [...latestCountries.current];
             const idx = mutableCountries.findIndex(c => c.id === country.id);
-            mutableCountries[idx] = country;
+            mutableCountries[idx] = setupCountries([country])[0];
 
             setCountries(mutableCountries);
           });
@@ -120,7 +126,7 @@ const App = () => {
   }
 
   const totalMedal = () => {
-    const countryListCopy = [...countries];
+    const countryListCopy = [...latestCountries.current];
     let total = 0;
     countryListCopy.forEach(country => {
       total += country.medals.reduce((count, medal) => count + medal.count, 0);
@@ -131,7 +137,7 @@ const App = () => {
 
   const addCountry = async (name) => {
     await axios.post(apiEndpoint, { name: name });
-    fetchCountries();
+    // fetchCountries();
   }
 
   const onDelete = async (countryId) => {
