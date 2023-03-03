@@ -1,5 +1,5 @@
 import './App.css';
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { HubConnectionBuilder } from '@microsoft/signalr';
 import Country from './components/Country';
@@ -18,41 +18,41 @@ const theme = createTheme({
   },
 });
 
-const App = () => {  
+const App = () => {
 
-  
+
   //const apiEndpoint = "https://medalcounter202302.azurewebsites.net/api/country";
   const hubEndpoint = "https://localhost:5001/medalsHub"
   //const apiEndpoint = "https://localhost:5001/api/country"
-  const [ countries, setCountries ] = useState([]);
-  const [ connection, setConnection] = useState(null);
+  const [countries, setCountries] = useState([]);
+  const [connection, setConnection] = useState(null);
 
-    useEffect(() => {
-      // initial data loaded here
-      fetchCountries();
-    }, []); 
-    
-    async function fetchCountries() {
-      const { data: fetchedCountries } = await axios.get(apiEndpoint);
-      const prepcountries = fetchedCountries.map(country => {
-        return { id: country.id, name: country.name, medals: [{id: 1, type: "gold", count: country.gold},{id: 2,type:"silver", count: country.silver},{id: 3,type:"bronze", count: country.bronze}]}
-      });
-      setCountries(prepcountries);
-   
-    
+  useEffect(() => {
+    // initial data loaded here
+    fetchCountries();
+  }, []);
+
+  async function fetchCountries() {
+    const { data: fetchedCountries } = await axios.get(apiEndpoint);
+    const prepcountries = fetchedCountries.map(country => {
+      return { id: country.id, name: country.name, medals: [{ id: 1, type: "gold", count: country.gold }, { id: 2, type: "silver", count: country.silver }, { id: 3, type: "bronze", count: country.bronze }] }
+    });
+    setCountries(prepcountries);
+
+
     // signalR
     const newConnection = new HubConnectionBuilder()
       .withUrl(hubEndpoint)
       .withAutomaticReconnect()
       .build();
 
-      setConnection(newConnection);
-     }
+    setConnection(newConnection);
+  }
 
-     // componentDidUpdate (changes to connection)
-    useEffect(() => {
-      if (connection) {
-        connection.start()
+  // componentDidUpdate (changes to connection)
+  useEffect(() => {
+    if (connection) {
+      connection.start()
         .then(() => {
           console.log('Connected!')
           connection.on('ReceiveAddMessage', country => {
@@ -61,111 +61,128 @@ const App = () => {
             mutableCountries = mutableCountries.concat(country);
             setCountries(mutableCountries);
           });
+          connection.on('ReceiveDeleteMessage', id => {
+            console.log(`Delete id: ${id}`);
+            let mutableCountries = [...latestCountries.current];
+            mutableCountries = mutableCountries.filter(c => c.id !== id);
+
+            setCountries(mutableCountries);
+          });
+
+          connection.on('ReceivePatchMessage', country => {
+            console.log(`Patch: ${country.name}`);
+            let mutableCountries = [...latestCountries.current];
+            const idx = mutableCountries.findIndex(c => c.id === country.id);
+            mutableCountries[idx] = country;
+
+            setCountries(mutableCountries);
+          });
         })
         .catch(e => console.log('Connection failed: ', e));
-      }
+    }
     // useEffect is dependent on changes connection
-    }, [connection]);
-    
-    const IncrementMedal= (countryId, medalId) => handleUpdate(countryId, medalId, 1);
-    const DecreaseMedal = (countryId, medalId) =>  handleUpdate(countryId, medalId, -1)
-    
-    const handleUpdate = async (countryId, medalId, factor) => {
-      const newcountryList = countries.map((country) => {
-        // const idx = countries.findIndex(c => c.id === countryId);
-        if(country.id === countryId) {
-          country.medals.map((medal) => {
-            if(medal.id === medalId){
-              medal.count += (1 * factor);
-            } return medal;
-          });
-        }
-        return country;
-      });
-      setCountries(newcountryList);
+  }, [connection]);
 
-      const countryToPatchIndex = newcountryList.findIndex(x => x.id === countryId);
-      const country = newcountryList[countryToPatchIndex];
-      const medalType = country.medals[medalId - 1].type;
-      const medalCount = country.medals[medalId - 1].count;
-      const jsonPatch = [{ op: "replace", path: medalType, value: medalCount }];
-      
-      try {
-        await axios.patch(`${apiEndpoint}/${countryId}`, jsonPatch);
-      } catch (ex) {
-        if (ex.response && ex.response.status === 404) {
-          // country already deleted
-          console.log("The record does not exist - it may have already been deleted");
-        } else { 
-          alert('An error occurred while updating');
-          setCountries(newcountryList);
-        }
+  const IncrementMedal = (countryId, medalId) => handleUpdate(countryId, medalId, 1);
+  const DecreaseMedal = (countryId, medalId) => handleUpdate(countryId, medalId, -1)
+
+  const handleUpdate = async (countryId, medalId, factor) => {
+    const newcountryList = countries.map((country) => {
+      // const idx = countries.findIndex(c => c.id === countryId);
+      if (country.id === countryId) {
+        country.medals.map((medal) => {
+          if (medal.id === medalId) {
+            medal.count += (1 * factor);
+          } return medal;
+        });
+      }
+      return country;
+    });
+    setCountries(newcountryList);
+
+    const countryToPatchIndex = newcountryList.findIndex(x => x.id === countryId);
+    const country = newcountryList[countryToPatchIndex];
+    const medalType = country.medals[medalId - 1].type;
+    const medalCount = country.medals[medalId - 1].count;
+    const jsonPatch = [{ op: "replace", path: medalType, value: medalCount }];
+
+    try {
+      await axios.patch(`${apiEndpoint}/${countryId}`, jsonPatch);
+    } catch (ex) {
+      if (ex.response && ex.response.status === 404) {
+        // country already deleted
+        console.log("The record does not exist - it may have already been deleted");
+      } else {
+        alert('An error occurred while updating');
+        setCountries(newcountryList);
       }
     }
+  }
 
-    const totalMedal = () => {
-      const countryListCopy = [...countries];
-      let total = 0;
-      countryListCopy.forEach(country => {
-        total += country.medals.reduce((count, medal) => count + medal.count, 0);
-      })
-      return total;
-    };
-    
-    
-    const addCountry = async (name) => {
-      await axios.post(apiEndpoint, { name: name });
-      fetchCountries();
+  const totalMedal = () => {
+    const countryListCopy = [...countries];
+    let total = 0;
+    countryListCopy.forEach(country => {
+      total += country.medals.reduce((count, medal) => count + medal.count, 0);
+    })
+    return total;
+  };
+
+
+  const addCountry = async (name) => {
+    await axios.post(apiEndpoint, { name: name });
+    fetchCountries();
+  }
+
+  const onDelete = async (countryId) => {
+    const originalCountries = countries;
+
+    try {
+      await axios.delete(`${apiEndpoint}/${countryId}`);
+      // Both options work, one is just more efficient
+      setCountries(countries.filter(country => country.id !== countryId));
+      //fetchCountries();
+    } catch (ex) {
+      alert('An error occurred while deleting a country');
+      setCountries(originalCountries);
     }
-    
-    const onDelete = async (countryId) => {
-      const originalCountries = countries;
 
-      try {
-        await axios.delete(`${apiEndpoint}/${countryId}`);
-        // Both options work, one is just more efficient
-        setCountries(countries.filter(country => country.id !== countryId));
-        //fetchCountries();
-      } catch(ex) {
-        alert('An error occurred while deleting a country');
-        setCountries(originalCountries);
-      }
-    }
+  }
 
-    return ( 
-    <>     
+  return (
+    <>
       <ThemeProvider theme={theme}>
         <Typography variant="h5" component="h5" align='center'>
           Olympic Medals: {totalMedal()}
         </Typography>
-        
+
         <Grid container
-        spacing={4}
-        direction="column"
-        alignItems="center"
-        justify="center"
-        style={{ minHeight: '100vh' }}
+          spacing={4}
+          direction="column"
+          alignItems="center"
+          justify="center"
+          style={{ minHeight: '100vh' }}
         >
-        
-          <Grid item xs={4} style={{textAlign: "center"}}>
+
+          <Grid item xs={4} style={{ textAlign: "center" }}>
             {countries.map(country => (
-                                        <Country
-                                        key={country.id}
-                                        country={country}                                    
-                                        increment={IncrementMedal}
-                                        decrease={DecreaseMedal}                                      
-                                        onDelete={onDelete}
-                                        />
-                                    ))
+              <Country
+                key={country.id}
+                country={country}
+                increment={IncrementMedal}
+                decrease={DecreaseMedal}
+                onDelete={onDelete}
+              />
+            ))
             }
             <NewCountry
-            countryName={addCountry}/>
-          </Grid>        
-        </Grid>  
-    </ThemeProvider>  
+              countryName={addCountry} />
+          </Grid>
+        </Grid>
+      </ThemeProvider>
     </>
-    );
-  }
+  );
+}
 
 
 export default App;
