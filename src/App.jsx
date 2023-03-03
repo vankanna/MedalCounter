@@ -1,6 +1,7 @@
 import './App.css';
 import React, {useState, useEffect} from 'react';
 import axios from 'axios';
+import { HubConnectionBuilder } from '@microsoft/signalr';
 import Country from './components/Country';
 import NewCountry from './components/NewCountry';
 import Typography from '@mui/material/Typography';
@@ -19,9 +20,12 @@ const theme = createTheme({
 
 const App = () => {  
 
-  const [ countries, setCountries ] = useState([]);
+  
   //const apiEndpoint = "https://medalcounter202302.azurewebsites.net/api/country";
-  const apiEndpoint = "https://localhost:5001/api/country"
+  const hubEndpoint = "https://localhost:5001/medalsHub"
+  //const apiEndpoint = "https://localhost:5001/api/country"
+  const [ countries, setCountries ] = useState([]);
+  const [ connection, setConnection] = useState(null);
 
     useEffect(() => {
       // initial data loaded here
@@ -34,8 +38,28 @@ const App = () => {
         return { id: country.id, name: country.name, medals: [{id: 1, type: "gold", count: country.gold},{id: 2,type:"silver", count: country.silver},{id: 3,type:"bronze", count: country.bronze}]}
       });
       setCountries(prepcountries);
-    }
+   
     
+    // signalR
+    const newConnection = new HubConnectionBuilder()
+      .withUrl(hubEndpoint)
+      .withAutomaticReconnect()
+      .build();
+
+      setConnection(newConnection);
+     }
+     
+     // componentDidUpdate (changes to connection)
+    useEffect(() => {
+      if (connection) {
+        connection.start()
+        .then(() => {
+          console.log('Connected!')
+        })
+        .catch(e => console.log('Connection failed: ', e));
+      }
+    // useEffect is dependent on changes connection
+    }, [connection]);
     
     const IncrementMedal= (countryId, medalId) => handleUpdate(countryId, medalId, 1);
     const DecreaseMedal = (countryId, medalId) =>  handleUpdate(countryId, medalId, -1)
@@ -72,6 +96,7 @@ const App = () => {
         }
       }
     }
+
     const totalMedal = () => {
       const countryListCopy = [...countries];
       let total = 0;
