@@ -20,9 +20,10 @@ const theme = createTheme({
 
 const App = () => {
 
-  //const apiEndpoint = "https://medalcounter202302.azurewebsites.net/api/country";
-  const hubEndpoint = "https://localhost:5001/medalsHub"
-  const apiEndpoint = "https://localhost:5001/api/country"
+  const apiEndpoint = "https://medalcounter202302.azurewebsites.net/api/country";
+  const hubEndpoint = "https://medalcounter202302.azurewebsites.net/medalHub";
+  // const hubEndpoint = "https://localhost:5001/medalsHub";
+  // const apiEndpoint = "https://localhost:5001/api/country";
   const [countries, setCountries] = useState([]);
   const [connection, setConnection] = useState(null);
 
