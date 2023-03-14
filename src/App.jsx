@@ -20,10 +20,10 @@ const theme = createTheme({
 
 const App = () => {
 
-  // const apiEndpoint = "https://medalcounter202302.azurewebsites.net/api/country";
-  // const hubEndpoint = "https://medalcounter202302.azurewebsites.net/medalsHub";
-  const hubEndpoint = "https://localhost:5001/medalsHub";
-  const apiEndpoint = "https://localhost:5001/api/country";
+  //const apiEndpoint = "https://medalcounter202302.azurewebsites.net/api/country";
+  //const hubEndpoint = "https://medalcounter202302.azurewebsites.net/medalsHub"
+  const hubEndpoint = "https://localhost:5001/medalsHub"
+  const apiEndpoint = "https://localhost:5001/api/country"
   const [countries, setCountries] = useState([]);
   const [connection, setConnection] = useState(null);
 
@@ -94,7 +94,7 @@ const App = () => {
   const DecreaseMedal = (countryId, medalId) => handleUpdate(countryId, medalId, -1)
 
   const handleUpdate = async (countryId, medalId, factor) => {
-    const newcountryList = countries.map((country) => {
+    /*const newcountryList = countries.map((country) => {
       // const idx = countries.findIndex(c => c.id === countryId);
       if (country.id === countryId) {
         country.medals.map((medal) => {
@@ -106,12 +106,13 @@ const App = () => {
       return country;
     });
     setCountries(newcountryList);
-
-    const countryToPatchIndex = newcountryList.findIndex(x => x.id === countryId);
-    const country = newcountryList[countryToPatchIndex];
+    */
+    const countryToPatchIndex = countries.findIndex(x => x.id === countryId);
+    const country = countries[countryToPatchIndex];
     const medalType = country.medals[medalId - 1].type;
     const medalCount = country.medals[medalId - 1].count;
-    const jsonPatch = [{ op: "replace", path: medalType, value: medalCount }];
+    const jsonPatch = [{ op: "replace", path: medalType, value: medalCount }];    
+    console.log(`json patch for id: ${countryId}: ${JSON.stringify(jsonPatch)}`);
 
     try {
       await axios.patch(`${apiEndpoint}/${countryId}`, jsonPatch);
@@ -119,9 +120,16 @@ const App = () => {
       if (ex.response && ex.response.status === 404) {
         // country already deleted
         console.log("The record does not exist - it may have already been deleted");
+      } else if (ex.response && (ex.response.status === 401 || ex.response.status === 403)) { 
+        // in order to restore the defualt medal counts, we would need to save 
+        // the page value and saved value for each medal (like in the advanced example)
+        alert('You are not authorized to complete this request');
+        // to simplify, I am reloading the page instead
+        window.location.reload(false);
+      } else if (ex.response) {
+        console.log(ex.response);
       } else {
-        alert('An error occurred while updating');
-        setCountries(newcountryList);
+        console.log("Request failed");
       }
     }
   }
