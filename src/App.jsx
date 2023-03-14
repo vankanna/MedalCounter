@@ -2,6 +2,7 @@ import './App.css';
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { HubConnectionBuilder } from '@microsoft/signalr';
+import Login from './components/Login';
 import Country from './components/Country';
 import NewCountry from './components/NewCountry';
 import Typography from '@mui/material/Typography';
@@ -145,8 +146,17 @@ const App = () => {
 
 
   const addCountry = async (name) => {
-    await axios.post(apiEndpoint, { name: name });
-    // fetchCountries();
+    try {
+      await axios.post(apiEndpoint, { name: name });
+    } catch (ex) {
+      if (ex.response && (ex.response.status === 401 || ex.response.status === 403)) {
+        alert("You are not authorized to complete this request");
+      } else if (ex.response) {
+        console.log(ex.response);
+      } else {
+        console.log("Request failed");
+      }
+    }
   }
 
   const onDelete = async (countryId) => {
@@ -157,9 +167,15 @@ const App = () => {
       // Both options work, one is just more efficient
       setCountries(countries.filter(country => country.id !== countryId));
       //fetchCountries();
-    } catch (ex) {
-      alert('An error occurred while deleting a country');
+    } catch (ex) {      
       setCountries(originalCountries);
+      if (ex.response && (ex.response.status === 401 || ex.response.status === 403)) {
+        alert("You are not authorized to complete this request");
+      } else if (ex.response) {
+        console.log(ex.response);
+      } else {
+        console.log("Request failed");
+      }
     }
 
   }
@@ -170,7 +186,7 @@ const App = () => {
         <Typography variant="h5" component="h5" align='center'>
           Olympic Medals: {totalMedal()}
         </Typography>
-
+        <Login />
         <Grid container
           spacing={4}
           direction="column"
