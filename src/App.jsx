@@ -2,22 +2,12 @@ import './App.css';
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { HubConnectionBuilder } from '@microsoft/signalr';
+import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
 import Login from './components/Login';
 import Country from './components/Country';
 import NewCountry from './components/NewCountry';
-import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 
-const theme = createTheme({
-  typography: {
-    allVariants: {
-      fontFamily: 'Roboto',
-      textTransform: 'none',
-    },
-  },
-});
 
 const App = () => {
 
@@ -181,22 +171,17 @@ const App = () => {
   }
 
   return (
-    <>
-      <ThemeProvider theme={theme}>
-        <Typography variant="h5" component="h5" align='center'>
-          Olympic Medals: {totalMedal()}
-        </Typography>
-        <Login />
-        <Grid container
-          spacing={4}
-          direction="column"
-          alignItems="center"
-          justify="center"
-          style={{ minHeight: '100vh' }}
-        >
-
-          <Grid item xs={4} style={{ textAlign: "center" }}>
-            {countries.map(country => (
+    <Router>
+      <div className='appHeading'>
+          Olympic Medals: 
+          <span className='badge'>{totalMedal()}</span>
+          <Link to="/login" className='loginLink'>Login</Link>
+      </div>
+        <Route exact path="/login">
+          <Login />
+        </Route>
+        <div className='countries'>
+            {countries.map(country => 
               <Country
                 key={country.id}
                 country={country}
@@ -204,14 +189,11 @@ const App = () => {
                 decrease={DecreaseMedal}
                 onDelete={onDelete}
               />
-            ))
-            }
+            )}
             <NewCountry
               countryName={addCountry} />
-          </Grid>
-        </Grid>
-      </ThemeProvider>
-    </>
+          </div>      
+    </Router>
   );
 }
 

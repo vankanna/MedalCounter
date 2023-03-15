@@ -12,7 +12,7 @@ const Country = (props) => {
         onDelete(country.id);
     };
     return (
-        <div className='card'>
+        <div className='newCountryButton'>
             <div>
                 <p variant="h5" component="h5" align='center'>
                     {country.name}: {getTotalMedals(country.medals)}
