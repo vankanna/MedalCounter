@@ -9,7 +9,7 @@ const NewCountry = (props) => {
   };
 
   return (
-    <div>
+    <div align='center'>
       <button onClick={handleClick}>Add a new country</button>      
     </div>
   );

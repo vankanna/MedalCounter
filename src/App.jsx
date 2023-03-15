@@ -12,10 +12,10 @@ import NewCountry from './components/NewCountry';
 
 const App = () => {
 
-  //const apiEndpoint = "https://medalcounter202302.azurewebsites.net/api/country";
-  //const hubEndpoint = "https://medalcounter202302.azurewebsites.net/medalsHub"
-  const hubEndpoint = "https://localhost:5001/medalsHub"
-  const apiEndpoint = "https://localhost:5001/api/country"
+  const apiEndpoint = "https://medalcounter202302.azurewebsites.net/api/country";
+  const hubEndpoint = "https://medalcounter202302.azurewebsites.net/medalsHub"
+  //const hubEndpoint = "https://localhost:5001/medalsHub"
+  //const apiEndpoint = "https://localhost:5001/api/country"
   const usersEndpoint = "https://localhost:5001/api/users/login";
   const [countries, setCountries] = useState([]);
   const [connection, setConnection] = useState(null);
@@ -25,6 +25,7 @@ const App = () => {
       return { id: country.id, name: country.name, medals: [{ id: 1, type: "gold", count: country.gold }, { id: 2, type: "silver", count: country.silver }, { id: 3, type: "bronze", count: country.bronze }] }
     });
   };
+
   const [ user, setUser ] = useState(
     {
       name: null,
@@ -47,6 +48,13 @@ const App = () => {
     }
 
     fetchCountries();
+
+    const encodedJwt = localStorage.getItem("token");
+    // check for existing token
+    if (encodedJwt) {
+      setUser(getUser(encodedJwt));
+    }
+
 
     // signalR
     const newConnection = new HubConnectionBuilder()
@@ -95,7 +103,7 @@ const App = () => {
   const DecreaseMedal = (countryId, medalId) => handleUpdate(countryId, medalId, -1)
 
   const handleUpdate = async (countryId, medalId, factor) => {
-    /*const newcountryList = countries.map((country) => {
+    const newcountryList = countries.map((country) => {
       // const idx = countries.findIndex(c => c.id === countryId);
       if (country.id === countryId) {
         country.medals.map((medal) => {
@@ -107,7 +115,7 @@ const App = () => {
       return country;
     });
     setCountries(newcountryList);
-    */
+    
     const countryToPatchIndex = countries.findIndex(x => x.id === countryId);
     const country = countries[countryToPatchIndex];
     const medalType = country.medals[medalId - 1].type;
@@ -210,7 +218,7 @@ const App = () => {
 
   const onDelete = async (countryId) => {
     const originalCountries = countries;
-
+    setCountries(countries.filter(country => country.id !== countryId));
     try {
       await axios.delete(`${apiEndpoint}/${countryId}`, {
         headers: {
@@ -218,7 +226,7 @@ const App = () => {
         }
       });
       // Both options work, one is just more efficient
-      setCountries(countries.filter(country => country.id !== countryId));
+      
       //fetchCountries();
     } catch (ex) {      
       setCountries(originalCountries);
@@ -248,17 +256,18 @@ const App = () => {
           <Login onLogin={handleLogin} />
         </Route>
         <div className='countries'>
-            {countries.map(country => 
+            {countries.map(country => (
               <Country
                 key={country.id}
                 country={country}
+                canDelete={ user.canDelete }
+                canPatch={ user.canPatch }
                 increment={IncrementMedal}
                 decrease={DecreaseMedal}
                 onDelete={onDelete}
-              />
+              />)
             )}
-            <NewCountry
-              countryName={addCountry} />
+            { user.canPost && <NewCountry countryName={ addCountry } /> }
           </div>      
     </Router>
   );
