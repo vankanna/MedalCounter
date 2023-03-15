@@ -2,7 +2,8 @@ import './App.css';
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { HubConnectionBuilder } from '@microsoft/signalr';
-import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
+import jwtDecode from 'jwt-decode';
 import Login from './components/Login';
 import Country from './components/Country';
 import NewCountry from './components/NewCountry';
@@ -24,6 +25,14 @@ const App = () => {
       return { id: country.id, name: country.name, medals: [{ id: 1, type: "gold", count: country.gold }, { id: 2, type: "silver", count: country.silver }, { id: 3, type: "bronze", count: country.bronze }] }
     });
   };
+  const [ user, setUser ] = useState(
+    {
+      name: null,
+      canPost: false,
+      canPatch: false,
+      canDelete: false
+    }
+  );
 
   const latestCountries = useRef(null);
   // latestCountries.current is a ref variable to countries
@@ -129,7 +138,8 @@ const App = () => {
     try {
       const resp = await axios.post(usersEndpoint, { username: username, password: password });
       const encodedJwt = resp.data.token;
-      console.log(encodedJwt);
+      localStorage.setItem('token', encodedJwt);
+      setUser(getUser(encodedJwt));
     } catch (ex) {
       if (ex.response && (ex.response.status === 401 || ex.response.status === 400 )) {
         alert("Login failed");
@@ -139,6 +149,16 @@ const App = () => {
         console.log("Request failed");
       }
     }
+  }
+  const getUser = (encodedJwt) => {
+    // return unencoded user / permissions
+    const decodedJwt = jwtDecode(encodedJwt);
+    return {
+      name: decodedJwt['username'],
+      canPost: decodedJwt['roles'].indexOf('medals-post') === -1 ? false : true,
+      canPatch: decodedJwt['roles'].indexOf('medals-patch') === -1 ? false : true,
+      canDelete: decodedJwt['roles'].indexOf('medals-delete') === -1 ? false : true,
+    };
   }
   const totalMedal = () => {
     const countryListCopy = [...latestCountries.current];
