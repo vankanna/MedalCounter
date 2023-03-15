@@ -116,7 +116,11 @@ const App = () => {
     console.log(`json patch for id: ${countryId}: ${JSON.stringify(jsonPatch)}`);
 
     try {
-      await axios.patch(`${apiEndpoint}/${countryId}`, jsonPatch);
+      await axios.patch(`${apiEndpoint}/${countryId}`, jsonPatch, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
     } catch (ex) {
       if (ex.response && ex.response.status === 404) {
         // country already deleted
@@ -186,7 +190,13 @@ const App = () => {
 
   const addCountry = async (name) => {
     try {
-      await axios.post(apiEndpoint, { name: name });
+      await axios.post(apiEndpoint, {
+        name: name
+      }, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
     } catch (ex) {
       if (ex.response && (ex.response.status === 401 || ex.response.status === 403)) {
         alert("You are not authorized to complete this request");
@@ -202,7 +212,11 @@ const App = () => {
     const originalCountries = countries;
 
     try {
-      await axios.delete(`${apiEndpoint}/${countryId}`);
+      await axios.delete(`${apiEndpoint}/${countryId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
       // Both options work, one is just more efficient
       setCountries(countries.filter(country => country.id !== countryId));
       //fetchCountries();
