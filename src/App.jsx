@@ -14,9 +14,10 @@ const App = () => {
 
   const apiEndpoint = "https://medalcounter202302.azurewebsites.net/api/country";
   const hubEndpoint = "https://medalcounter202302.azurewebsites.net/medalsHub"
+  const usersEndpoint = "https://medalcounter202302.azurewebsites.net/api/users/login";
   //const hubEndpoint = "https://localhost:5001/medalsHub"
   //const apiEndpoint = "https://localhost:5001/api/country"
-  const usersEndpoint = "https://localhost:5001/api/users/login";
+  // const usersEndpoint = "https://localhost:5001/api/users/login";
   const [countries, setCountries] = useState([]);
   const [connection, setConnection] = useState(null);
 
