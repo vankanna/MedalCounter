@@ -15,6 +15,7 @@ const App = () => {
   //const hubEndpoint = "https://medalcounter202302.azurewebsites.net/medalsHub"
   const hubEndpoint = "https://localhost:5001/medalsHub"
   const apiEndpoint = "https://localhost:5001/api/country"
+  const usersEndpoint = "https://localhost:5001/api/users/login";
   const [countries, setCountries] = useState([]);
   const [connection, setConnection] = useState(null);
 
@@ -124,7 +125,21 @@ const App = () => {
       }
     }
   }
-
+  const handleLogin = async (username, password) => {
+    try {
+      const resp = await axios.post(usersEndpoint, { username: username, password: password });
+      const encodedJwt = resp.data.token;
+      console.log(encodedJwt);
+    } catch (ex) {
+      if (ex.response && (ex.response.status === 401 || ex.response.status === 400 )) {
+        alert("Login failed");
+      } else if (ex.response) {
+        console.log(ex.response);
+      } else {
+        console.log("Request failed");
+      }
+    }
+  }
   const totalMedal = () => {
     const countryListCopy = [...latestCountries.current];
     let total = 0;
@@ -178,7 +193,7 @@ const App = () => {
           <Link to="/login" className='loginLink'>Login</Link>
       </div>
         <Route exact path="/login">
-          <Login />
+          <Login onLogin={handleLogin} />
         </Route>
         <div className='countries'>
             {countries.map(country => 
