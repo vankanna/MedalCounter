@@ -7,8 +7,8 @@ const Medal = (props) => {
     
 
     return (
-        <div className='counter' align='center'>
-            {medal.type} Medals: {medal.count}
+        <div className="medals">
+            {medal.type} Medals: {medal.count} 
             {/* <button align='center' onClick={() => { increment(countryId, medal.id); }}>
                 +
             </button>
@@ -17,8 +17,8 @@ const Medal = (props) => {
             </button> */}
             { canPatch && 
             <React.Fragment>
-                <button align='center' onClick={ () => { increment(countryId, medal.id); } }>+</button>
-                <button align='center' disabled= {medal.count === 0} onClick={ () => { decrease(countryId, medal.id); } }>-</button>
+                <button align='center' onClick={ () => { increment(countryId, medal.id); } }> + </button>
+                <button align='center' disabled= {medal.count === 0} onClick={ () => { decrease(countryId, medal.id); } }> - </button>
             </React.Fragment>
       }
 
