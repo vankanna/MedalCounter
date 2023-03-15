@@ -1,28 +1,28 @@
-import React, {Component} from 'react'; 
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
+import React from 'react';
 
 
+const Medal = (props) => {
 
-class Medal extends Component {   
+    const { medal, countryId, canPatch, increment, decrease  } = props;
     
-    
-    render() {
-        const {medal, countryId} = this.props;
-        const {increment,decrease} = this.props;
 
-        return(
-        <Typography className='counter' align='center'>
-            {medal.type} Medals: {medal.count}
-            <Button variant="contained" align='center' onClick={()=> {increment(countryId, medal.id);}}>
-            +
-            </Button>
-            <Button variant="contained" align='center' onClick={() => {decrease(countryId, medal.id);}}>
+    return (
+        <div className="medals">
+            {medal.type} Medals: {medal.count} 
+            {/* <button align='center' onClick={() => { increment(countryId, medal.id); }}>
+                +
+            </button>
+            <button align='center' disabled={medal.count === 0} onClick={() => { decrease(countryId, medal.id); }}>
                 -
-            </Button>
-        </Typography>   
-        )
+            </button> */}
+            { canPatch && 
+            <React.Fragment>
+                <button align='center' onClick={ () => { increment(countryId, medal.id); } }> + </button>
+                <button align='center' disabled= {medal.count === 0} onClick={ () => { decrease(countryId, medal.id); } }> - </button>
+            </React.Fragment>
+      }
 
-    }
+        </div>
+    )
 }
-export default Medal
+export default Medal;

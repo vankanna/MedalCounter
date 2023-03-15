@@ -1,41 +1,39 @@
-import React, {Component} from 'react';
-import Card from '@mui/material/Card';
-import Typography from '@mui/material/Typography';
-import { CardContent } from '@mui/material';
+import React from 'react';
 import Medal from './Medal'
 
 
-class Country extends Component {    
-
-    getTotalMedals(medals){
+const Country = (props) => {    
+    const {country, increment, decrease, onDelete, canDelete, canPatch } = props;
+    const getTotalMedals = (medals) => {
         return medals.reduce((total, medal) => total + medal.count, 0);
     };
-    render() {
-        const {country, increment, decrease} = this.props;
-        
+            
+    // function handleDelete () {
+    //     onDelete(country.id);
+    // };
     return (
-
-        <Card>
-            <CardContent>
-                <Typography variant="h5" component="h5" align='center'>
-                    {country.name}: {this.getTotalMedals(country.medals)}
-                </Typography>
+        <div className='newCountryButton'>
+            <div>
+                <p variant="h5" component="h5" align='center'>
+                    {country.name}: {getTotalMedals(country.medals)}
+                </p>
                 {country.medals.map(medal => (
                                         <Medal
                                         key={medal.id}
                                         medal={medal}
                                         countryId={country.id}
-                                        medalCount={medal.count}
-                                        
+                                        canPatch={ canPatch }
+                                        medalCount={medal.count}                                        
                                         increment={increment}
-                                        decrease={decrease}
-                                        
+                                        decrease={decrease}                                        
                                         />
                                     ))
-            }               
-            </CardContent>
-        </Card>
+                }                
+                {/* <button onClick={handleDelete}>Delete</button>         */}
+                { canDelete && <button onClick={() => onDelete(country.id)}>Delete</button> }      
+            </div>
+        </div>
     )
-    }
 }
-export default Country
+
+export default Country;

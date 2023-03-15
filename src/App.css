@@ -1,0 +1,92 @@
+.appHeading {
+  font-size: 1.4em;
+  width: 100%;
+  min-height: 40px;
+  position: fixed;
+  z-Index: 1000;
+  background-color: rgb(137, 123, 46);
+  color: white;
+  padding: 6px;
+  opacity: .85;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.countries {
+  padding-top: 60px;
+  border: 5px;
+  align-items: center;
+  justify-content: center;
+  
+}
+
+.country {
+  text-align: center;
+  padding-top: 0px;
+}
+
+.name {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.badge {
+  margin-left: 10px;
+  display: inline-block;
+  min-width: 25px;
+  height: 25px;
+  padding: 3px;
+  border-radius: 50%;
+  font-size: 18px;
+  text-align: center;
+  background: #fcfcfc;
+  color: #621be5;
+}
+
+.medals {
+  text-transform: capitalize;
+}
+
+.medals button {
+  margin-left: 10px;
+  width: 25px;
+  border-radius: 50%;
+}
+
+.newCountryButton {
+  text-align: center;
+  margin-bottom: 20px; 
+  margin: auto;
+  border-color: #621be5;
+  width: 200px;
+  height: 150px;
+  
+}
+
+.loginLink, .logout  {
+  color: #fff;
+  position:absolute;
+  top: 8px;
+  left: 8px;
+}
+
+.logoutLink {
+  color: #fff;
+}
+
+.loginForm {
+  border: 1px solid #999;
+  background-color: #dedede;
+  padding: 8px;
+  border-radius: 4px;
+  position: absolute;
+  width: 300px;
+  top: 65px;
+  left: 8px;
+}
